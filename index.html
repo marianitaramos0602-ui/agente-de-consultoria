@@ -1330,6 +1330,127 @@
       .flow-steps { flex-wrap: wrap; gap: 8px; justify-content: center; }
       .flow-connector { display: none; }
     }
+
+    /* ── Tooltips ── */
+    .od-tip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      cursor: help;
+      vertical-align: middle;
+    }
+    .od-tip::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: max-content;
+      max-width: 280px;
+      padding: 10px 14px;
+      background: oklch(18% 0.012 250);
+      color: oklch(97% 0.004 240);
+      font-size: 12px;
+      line-height: 1.5;
+      font-family: var(--font-body);
+      font-weight: 400;
+      letter-spacing: 0;
+      text-transform: none;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 8px 24px oklch(0% 0 0 / 0.18);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      z-index: 100;
+      white-space: normal;
+    }
+    .od-tip::before {
+      content: '';
+      position: absolute;
+      bottom: calc(100% + 2px);
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: oklch(18% 0.012 250);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 100;
+    }
+    .od-tip:hover::after,
+    .od-tip:hover::before {
+      opacity: 1;
+    }
+    .od-tip:hover::after {
+      transform: translateX(-50%) translateY(-2px);
+    }
+    .od-tip-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      font-family: var(--font-body);
+      line-height: 1;
+      margin-left: 5px;
+      flex-shrink: 0;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .od-tip:hover .od-tip-icon {
+      background: var(--accent);
+      color: #fff;
+    }
+    .od-tip-block {
+      position: relative;
+      display: block;
+    }
+    .od-tip-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ── Tooltip overflow fix for right-edge containers ── */
+    #channels-list .od-tip::after,
+    #profit-table-container .od-tip::after {
+      left: auto;
+      right: 0;
+      transform: none;
+    }
+    #channels-list .od-tip::before,
+    #profit-table-container .od-tip::before {
+      left: auto;
+      right: 12px;
+      transform: none;
+    }
+    #channels-list .od-tip:hover::after,
+    #profit-table-container .od-tip:hover::after {
+      transform: translateY(-2px);
+    }
+
+    /* ── Semáforo help text ── */
+    .semaforo-help {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 4px;
+    }
+
+    /* ── Floating help button ── */
+    @media (max-width: 768px) {
+      #floating-help-btn {
+        bottom: 16px !important;
+        right: 16px !important;
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 18px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1477,6 +1598,10 @@
           <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           Rentabilidad
         </button>
+        <button class="dash-nav-item" data-tab="guia">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Manual de Uso
+        </button>
         <div class="dash-nav-label">Cuenta</div>
         <button class="dash-nav-item" data-tab="suscripcion">
           <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
@@ -1498,11 +1623,20 @@
             <!-- Semaforo de Ganancia Neta -->
             <div id="semaforo-container">
               <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px 28px;text-align:center;margin-bottom:24px">
-                <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Ganancia Neta del Mes</div>
-                <div id="semaforo-icon" style="font-size:48px;margin-bottom:8px;opacity:0.3">⏳</div>
+                <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Ganancia Neta del Mes <span class="od-tip" data-tip="Rojo: Estás poniendo plata de tu bolsillo. Verde: Cubriste todos los costos fijos y esta es tu verdadera ganancia libre."><span class="od-tip-icon">?</span></span></div>
+                <div id="semaforo-icon" style="font-size:48px;margin-bottom:8px;opacity:1">⏳</div>
                 <div id="semaforo-amount" style="font-family:var(--font-display);font-size:40px;font-weight:800;color:var(--muted)">$0</div>
                 <div id="semaforo-sub" style="font-size:14px;color:var(--muted);margin-top:6px">Cargá productos y costos fijos para ver tu resultado real.</div>
               </div>
+            </div>
+
+            <!-- Punto de Equilibrio -->
+            <div style="background:linear-gradient(135deg,oklch(96% 0.03 220),oklch(97% 0.01 220));border:1.5px solid var(--accent);border-radius:var(--radius);padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Meta mínima de facturación (Punto de Equilibrio)</div>
+                <div style="font-size:12px;color:var(--muted);max-width:520px;line-height:1.5">La facturación total que debe alcanzar la empresa este mes para cubrir toda la estructura y no dar pérdida.</div>
+              </div>
+              <div id="meta-ventas" style="font-family:var(--font-display);font-size:32px;font-weight:800;color:var(--accent);white-space:nowrap">$0</div>
             </div>
 
             <!-- KPIs Secundarios -->
@@ -1529,13 +1663,13 @@
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
                 <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
                   <div style="font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--success);margin-bottom:14px;display:flex;align-items:center;gap:8px">
-                    <span style="font-size:18px">⭐</span> Top 5 Estrellas
+                    <span style="font-size:18px">⭐</span> Top 5 Estrellas <span class="od-tip" data-tip="Los que más plata limpia te dejan."><span class="od-tip-icon">?</span></span>
                   </div>
                   <div id="top5-best"></div>
                 </div>
                 <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
                   <div style="font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--danger);margin-bottom:14px;display:flex;align-items:center;gap:8px">
-                    <span style="font-size:18px">⚓</span> Top 5 Anclas
+                    <span style="font-size:18px">⚓</span> Top 5 Anclas <span class="od-tip" data-tip="Los que te hacen perder plata o dejan margen nulo. Considerá subir el precio o dejar de venderlos."><span class="od-tip-icon">?</span></span>
                   </div>
                   <div id="top5-worst"></div>
                 </div>
@@ -1574,6 +1708,7 @@
               <label style="display:flex;align-items:center;gap:10px;margin-top:14px;padding:12px 16px;background:var(--accent-bg);border:1px solid var(--accent);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--fg);user-select:none">
                 <input type="checkbox" id="iva-checkbox" checked onchange="includeIVA=this.checked" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer">
                 <span><strong>Los precios de venta del Excel incluyen IVA (21%)</strong><br><span style="font-size:11px;color:var(--muted)">Si los precios ya tienen IVA, el sistema lo separa automáticamente para calcular la ganancia real.</span></span>
+                <span class="od-tip" data-tip="Si tus precios ya son los de mostrador (finales), dejá esto marcado. El sistema le saca el IVA solo para no mentirte con plata que es del Estado."><span class="od-tip-icon">?</span></span>
               </label>
               <div class="upload-format-info">
                 <div class="upload-format-title">Formato de la plantilla</div>
@@ -1587,8 +1722,8 @@
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px">
               <div style="font-family:var(--font-display);font-size:14px;font-weight:700;margin-bottom:14px">Carga manual (KPIs)</div>
               <div class="form-grid">
-                <div class="form-group"><label class="form-label">Ventas diarias ($)</label><input class="form-input" type="number" id="f-ventas" placeholder="245000"></div>
-                <div class="form-group"><label class="form-label">Ventas día anterior ($)</label><input class="form-input" type="number" id="f-ventas-prev" placeholder="268000"></div>
+                <div class="form-group"><label class="form-label">Ventas diarias ($)</label><input class="form-input" type="number" id="f-ventas" placeholder="245.000"></div>
+                <div class="form-group"><label class="form-label">Ventas día anterior ($)</label><input class="form-input" type="number" id="f-ventas-prev" placeholder="268.000"></div>
                 <div class="form-group"><label class="form-label">Stock crítico (unidades)</label><input class="form-input" type="number" id="f-stock" placeholder="8"></div>
                 <div class="form-group"><label class="form-label">Stock mínimo esperado</label><input class="form-input" type="number" id="f-stock-min" placeholder="12"></div>
                 <hr class="form-divider">
@@ -1598,7 +1733,7 @@
                  <div class="form-group"><label class="form-label">Quejas semana anterior</label><input class="form-input" type="number" id="f-quejas-prev" placeholder="3" step="1" min="0"></div>
               </div>
               <div style="margin-top:20px;text-align:right">
-                <button class="btn-sim" onclick="applyDashData()" style="background:var(--accent);color:#fff">Cargar Datos</button>
+                <button class="btn-sim" onclick="applyDashData()" style="background:var(--accent);color:#fff">Cargar Datos</button> <span id="dash-apply-msg" style="display:none;color:var(--success);font-size:12px;font-weight:600;margin-left:8px;vertical-align:middle">✓ ¡Datos cargados!</span>
               </div>
             </div>
           </div>
@@ -1609,16 +1744,35 @@
             <div class="dash-welcome-sub">Cargá tus productos y costos fijos para ver si ganás o perdés plata de verdad.</div>
             <div id="upload-alerts" style="display:none;margin-bottom:16px"></div>
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px">
-              <div style="font-family:var(--font-display);font-size:14px;font-weight:700;margin-bottom:14px">Costos Fijos Mensuales</div>
+              <div style="font-family:var(--font-display);font-size:14px;font-weight:700;margin-bottom:14px">Costos Fijos Mensuales <span class="od-tip" data-tip="La mochila: Alquiler, sueldos fijos, luz, gas. Vendas o no vendas un solo artículo, esto lo tenés que pagar igual."><span class="od-tip-icon">?</span></span></div>
               <div class="form-grid">
-                <div class="form-group"><label class="form-label">Alquiler ($)</label><input class="form-input" type="number" id="cf-alquiler" placeholder="180000"></div>
-                <div class="form-group"><label class="form-label">Sueldos + cargas ($)</label><input class="form-input" type="number" id="cf-sueldos" placeholder="350000"></div>
-                <div class="form-group"><label class="form-label">Servicios (luz, gas, internet) ($)</label><input class="form-input" type="number" id="cf-servicios" placeholder="45000"></div>
-                <div class="form-group"><label class="form-label">Otros gastos fijos ($)</label><input class="form-input" type="number" id="cf-otros" placeholder="30000"></div>
+                <div class="form-group"><label class="form-label">Alquiler ($)</label><input class="form-input" type="number" id="cf-alquiler" placeholder="180.000"></div>
+                <div class="form-group"><label class="form-label">Sueldos + cargas ($)</label><input class="form-input" type="number" id="cf-sueldos" placeholder="350.000"></div>
+                <div class="form-group"><label class="form-label">Servicios (luz, gas, internet) ($)</label><input class="form-input" type="number" id="cf-servicios" placeholder="45.000"></div>
+                <div class="form-group"><label class="form-label">Otros gastos fijos ($)</label><input class="form-input" type="number" id="cf-otros" placeholder="30.000"></div>
               </div>
               <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
                 <button class="btn-sim" onclick="saveFixedCosts()" style="background:var(--accent);color:#fff">Guardar costos fijos</button>
                 <span id="fixed-costs-saved" style="font-size:13px;color:var(--success);display:none">Guardado</span>
+              </div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px">
+              <div style="font-family:var(--font-display);font-size:14px;font-weight:700;margin-bottom:6px">Configuración de Canales de Venta <span class="od-tip" data-tip="El peaje: Acá configurás cuánto te saca la tarjeta o la plataforma, más Ingresos Brutos y comisiones de vendedores por cada venta."><span class="od-tip-icon">?</span></span></div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Definí la comisión de cada canal de venta. Los impuestos (IIBB) y comisiones de vendedores se aplican sobre todos los canales.</div>
+              <div id="channels-list"></div>
+              <div style="margin-top:12px;display:flex;align-items:center;gap:8px">
+                <button class="btn-sim" onclick="addSalesChannel()" style="background:transparent;color:var(--accent);border:1px solid var(--accent);font-size:12px;padding:5px 10px">+ Agregar canal</button>
+              </div>
+              <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+                <div style="font-family:var(--font-display);font-size:13px;font-weight:700;margin-bottom:10px">Costos globales (aplican a todos los canales)</div>
+                <div class="form-grid" style="grid-template-columns:1fr 1fr">
+                   <div class="form-group"><label class="form-label">Ingresos Brutos (IIBB) (%)</label><input class="form-input" type="number" id="vc-iibb" placeholder="3.5" step="0.1" oninput="saveGlobalCostsAndUpdate()"></div>
+                   <div class="form-group"><label class="form-label">Comisiones de vendedores (%)</label><input class="form-input" type="number" id="vc-comision-vendedores" placeholder="1" step="0.1" oninput="saveGlobalCostsAndUpdate()"></div>
+                </div>
+              </div>
+              <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
+                <button class="btn-sim" onclick="saveVariableCosts()" style="background:var(--accent);color:#fff">Guardar costos variables</button>
+                <span id="variable-costs-saved" style="font-size:13px;color:var(--success);display:none">Guardado</span>
               </div>
             </div>
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px">
@@ -1632,8 +1786,8 @@
               <input type="file" id="product-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleUnifiedUpload(event)">
               <div class="form-grid">
                 <div class="form-group"><label class="form-label">Producto</label><input class="form-input" type="text" id="pf-nombre" placeholder="Ej: Remera Básica"></div>
-                <div class="form-group"><label class="form-label">Precio venta ($)</label><input class="form-input" type="number" id="pf-precio" placeholder="3500"></div>
-                <div class="form-group"><label class="form-label">Costo unitario ($)</label><input class="form-input" type="number" id="pf-costo" placeholder="1800"></div>
+                <div class="form-group"><label class="form-label">Precio venta ($)</label><input class="form-input" type="number" id="pf-precio" placeholder="3.500"></div>
+                <div class="form-group"><label class="form-label">Costo unitario ($) <span class="od-tip" data-tip="¿Qué pongo acá? El precio de lista o el costo real de tu mercadería sin IVA. No le sumes ningún otro gasto, el sistema se encarga."><span class="od-tip-icon">?</span></span></label><input class="form-input" type="number" id="pf-costo" placeholder="1.800"></div>
                 <div class="form-group"><label class="form-label">Unidades vendidas / mes</label><input class="form-input" type="number" id="pf-unidades" placeholder="120"></div>
               </div>
               <div style="margin-top:16px;text-align:right">
@@ -1652,7 +1806,7 @@
                 </div>
                 <div id="profit-data-content" style="display:none">
                   <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
-                    <button class="btn-sim" onclick="downloadProfitabilityReport()" style="background:transparent;color:var(--accent);border:1px solid var(--accent);font-size:12px;padding:6px 14px">↓ Descargar reporte Excel</button>
+                     <button class="btn-sim" onclick="downloadMultiPriceList()" style="background:var(--accent);color:#fff;font-size:12px;padding:6px 14px">⬇️ Descargar Todas las Listas de Precios (Excel)</button>
                   </div>
                   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
                     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
@@ -1709,6 +1863,135 @@
               <div id="admin-users-list"></div>
             </div>
           </div>
+
+          <!-- Guía de Uso Tab -->
+          <div id="tab-content-guia" style="display:none">
+            <div class="dash-welcome">Manual Práctico: Control de tu Negocio</div>
+            <div class="dash-welcome-sub">Esta plataforma sirve para una sola cosa: descubrir si te está quedando plata en el bolsillo a fin de mes. Olvidate de términos complicados de contadores; acá vamos directo a la verdad del mostrador.</div>
+
+            <!-- Paso 1 -->
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px">
+              <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Paso 1: Alimentar el sistema (Cargar Datos)
+              </div>
+              <div style="font-size:13px;color:var(--fg);line-height:1.7">
+                <p style="margin-bottom:10px">El sistema no adivina, necesita saber qué vendés. Tenés dos opciones: cargar a mano o subir un Excel.</p>
+                <p style="margin-bottom:10px"><strong>El botón mágico del IVA:</strong> Cuando cargues tus productos, vas a ver una cajita que dice "Los precios incluyen IVA". Si descargás tu lista del sistema de ventas con los precios finales que ve el cliente en el local, dejá esto marcado. El sistema le saca el IVA solo, para no mentirte con plata que en realidad es del Estado.</p>
+                <p><strong>Sinceridad brutal con los costos:</strong> En "Costo Unitario", poné siempre lo que te sale comprar la mercadería de forma neta (sin IVA).</p>
+              </div>
+            </div>
+
+            <!-- Paso 2 -->
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px">
+              <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                Paso 2: Los Peajes y el Alquiler (Tus Costos)
+              </div>
+              <div style="font-size:13px;color:var(--fg);line-height:1.7">
+                <p style="margin-bottom:10px">Vender no es gratis. Hay dos tipos de "sanguijuelas" que se llevan tu margen:</p>
+                <p style="margin-bottom:10px"><strong>Costos Fijos (La mochila):</strong> Esto se carga en la pestaña Rentabilidad. Alquiler, sueldos fijos, luz, gas. Vendas o no vendas un solo artículo, esto lo tenés que pagar igual.</p>
+                <p style="margin-bottom:10px"><strong>Costos Variables (El peaje):</strong> Esto es lo mejor de la plataforma. Entrá a "Configuración de Canales de Venta". No es lo mismo que te paguen en efectivo en el local, a que vendas por Mercado Libre Premium. Acá configurás cuánto te saca la tarjeta o la plataforma, y le sumás Ingresos Brutos y la comisión de tus vendedores.</p>
+                <p><strong>Ejemplo del mostrador:</strong> Si vendés un TV Box a $39.999 y usás Mercado Libre Clásica (16%), la tabla te va a descontar ese "Costo Comercial" automáticamente para mostrarte la ganancia pura.</p>
+              </div>
+            </div>
+
+            <!-- Paso 3 -->
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px">
+              <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Paso 3: Entender la Tabla y el Simulador
+              </div>
+              <div style="font-size:13px;color:var(--fg);line-height:1.7">
+                <p style="margin-bottom:10px">Arriba de la lista de productos vas a ver un selector que dice <strong>"Simular vendiendo por..."</strong>. Elegí el canal (ej: Efectivo o Mercado Libre). Al instante, la tabla te hace la radiografía de cada producto:</p>
+                <div style="background:var(--bg);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;font-size:12px">
+                  <div style="display:grid;grid-template-columns:140px 1fr;gap:6px 12px">
+                    <strong>Costo Comercial</strong><span>La plata exacta en pesos que se queda la tarjeta, el vendedor y rentas por esa venta.</span>
+                    <strong>Ganancia</strong><span>Lo que te queda limpio en la mano por cada venta después de pagar el costo y el peaje.</span>
+                    <strong>Lupa (Competencia)</strong><span>Si tocás la lupa, el sistema busca ese producto en internet para ver a cuánto lo tiene el local de al lado. Ideal para cuando estás atendiendo y dudás del precio.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Paso 4 -->
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px">
+              <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                Paso 4: El Semáforo de la Verdad (Dashboard)
+              </div>
+              <div style="font-size:13px;color:var(--fg);line-height:1.7">
+                <p style="margin-bottom:10px">Una vez que cargaste todo, andá a la pestaña Dashboard. Ahí está el resumen de tu vida financiera.</p>
+                <ul style="padding-left:20px;margin-bottom:10px">
+                  <li><strong style="color:var(--danger)">Semáforo Rojo Fuerte (Alerta):</strong> Significa que la ganancia que te dejan tus productos no alcanza para pagar el alquiler y los sueldos. Estás poniendo plata de tu bolsillo.</li>
+                  <li><strong style="color:var(--success)">Semáforo Verde (Tranquilidad):</strong> Cubriste todos los costos fijos y te sobró plata. Ese número que ves ahí es tu verdadera ganancia libre.</li>
+                </ul>
+                <p><strong>Top 5 Estrellas vs Anclas:</strong> Debajo del semáforo vas a ver quiénes te salvan y quiénes te hunden. Si un artículo está en las Anclas, subile el precio, no le hagas más publicidad o dejá de comprarlo.</p>
+              </div>
+            </div>
+
+            <!-- Resumen -->
+            <div style="background:var(--accent-bg);border:1px solid var(--accent);border-radius:var(--radius);padding:24px;margin-bottom:16px">
+              <div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--accent-dark);margin-bottom:10px">Resumen para el día a día</div>
+              <div style="font-size:13px;color:var(--fg);line-height:1.7">
+                <p>No tenés que volverte loco mirando gráficos. Entrá, cargá tus ventas, seleccioná por dónde estás cobrando, y si el semáforo está verde, vas bien. Si hay un producto en rojo en la tabla, tocale la lupa, fijate a cuánto está en la calle, y ajustale el precio. Así de simple.</p>
+              </div>
+            </div>
+
+            <!-- El Número Mágico: Punto de Equilibrio -->
+            <div style="background:linear-gradient(135deg,oklch(96% 0.03 220),oklch(97% 0.01 220));border:1.5px solid var(--accent);border-radius:var(--radius);padding:24px;margin-bottom:16px">
+              <div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
+                El Número Mágico: Punto de Equilibrio
+              </div>
+              <div style="font-size:13px;color:var(--fg);line-height:1.7">
+                <p style="margin-bottom:10px"><strong>¿Qué es esta meta?</strong> Como responsable de fijar los precios, este número es tu norte. Te dice exactamente cuánta plata total tiene que facturar la PyME este mes para cubrir el costo de reponer la mercadería, las comisiones de todos los canales de venta, el alquiler, la luz y los sueldos.</p>
+                <ul style="padding-left:20px;margin-bottom:10px">
+                  <li style="margin-bottom:6px"><strong style="color:var(--danger)">Si la facturación proyectada está por debajo de este número:</strong> La empresa pierde plata. Toca ajustar precios o revisar qué canal se está comiendo el margen.</li>
+                  <li style="margin-bottom:6px"><strong style="color:var(--warn)">Si facturan exactamente este número:</strong> Empate técnico. Cero ganancia, cero pérdida.</li>
+                  <li><strong style="color:var(--success)">Todo lo que la empresa facture por encima de este número:</strong> Es ganancia limpia y real para el negocio.</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Generador de Listas de Precios -->
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px">
+              <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Generador de Listas de Precios (Cálculo Inverso)
+              </div>
+              <div style="font-size:13px;color:var(--fg);line-height:1.7">
+                <p style="margin-bottom:10px">El botón de descargar listas utiliza una fórmula financiera exacta (Markup sobre precio de venta) para garantizar la ganancia neta.</p>
+                <ul style="padding-left:20px;margin-bottom:10px">
+                  <li style="margin-bottom:6px"><strong>¿Cómo lo calcula?:</strong> Toma el Costo Unitario y hace el cálculo inverso contemplando absolutamente todas las fugas de dinero (Comisión de la plataforma + Ingresos Brutos + Comisión de vendedores + Margen Neto deseado).</li>
+                  <li><strong>¿Por qué es importante?:</strong> Si a un costo de $10.000 lo multiplicás por 1.30, al descontar comisiones sobre el precio final vas a ganar mucho menos del 30%. El sistema calcula el precio exacto para que en caja quede tu margen limpio.</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Semáforo de Rentabilidad por Canal -->
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px">
+              <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="3"/><circle cx="12" cy="9" r="1.5"/><circle cx="12" cy="15" r="1.5"/></svg>
+                Semáforo de Rentabilidad por Canal
+              </div>
+              <div style="font-size:13px;color:var(--fg);line-height:1.7">
+                <p style="margin-bottom:10px">El sistema te avisa en tiempo real si los números tienen sentido comercial:</p>
+                <ul style="padding-left:20px;margin-bottom:10px">
+                  <li style="margin-bottom:6px">🟢 <strong>Luz Verde (Saludable):</strong> La carga total (costos del canal + tu margen) es menor al 75%. Precio competitivo y ganancia real.</li>
+                  <li style="margin-bottom:6px">🟡 <strong>Luz Amarilla (Alerta de Precio Alto):</strong> La carga total está entre 75% y 99%. Matemáticamente posible, pero el precio se inflará mucho (Ej: Mercado Libre Premium).</li>
+                  <li>🔴 <strong>Luz Roja (Inviable):</strong> La carga total supera el 100%. Es matemáticamente imposible vender sin perder plata.</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Contacto -->
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center">
+              <div style="font-family:var(--font-display);font-size:14px;font-weight:700;margin-bottom:6px">¿Tenés dudas?</div>
+              <div style="font-size:13px;color:var(--muted)">Consultame directamente o escribime a <strong>marianakarinramos@gmail.com</strong> o WhatsApp <strong>11-2399-5838</strong></div>
+            </div>
+          </div>
+
         </main>
       </div>
     </div>
@@ -1728,7 +2011,7 @@
         </div>
         <div class="tab-panel active" id="tab-modal-form">
           <div class="form-grid">
-            <div class="form-group"><label class="form-label">Ventas diarias ($)</label><input class="form-input" type="number" id="mf-ventas" placeholder="245000"></div>
+            <div class="form-group"><label class="form-label">Ventas diarias ($)</label><input class="form-input" type="number" id="mf-ventas" placeholder="245.000"></div>
             <div class="form-group"><label class="form-label">Stock crítico</label><input class="form-input" type="number" id="mf-stock" placeholder="8"></div>
             <div class="form-group"><label class="form-label">Margen promedio (%)</label><input class="form-input" type="number" id="mf-margen" placeholder="34"></div>
             <div class="form-group"><label class="form-label">Quejas por semana</label><input class="form-input" type="number" id="mf-quejas" placeholder="5"></div>
@@ -1818,12 +2101,54 @@
     let dataLoaded = false;
     let products = [];
     let fixedCosts = { alquiler: 0, sueldos: 0, servicios: 0, otros: 0 };
+    let salesChannels = [
+      { nombre: 'Local (Efectivo/Transferencia)', comision: 0, margenDeseado: 30 },
+      { nombre: 'Local (QR / Link de pago)', comision: 5.5, margenDeseado: 30 },
+      { nombre: 'Tienda Nube / Web', comision: 7.5, margenDeseado: 30 },
+      { nombre: 'Mercado Libre (Clásica)', comision: 16, margenDeseado: 30 },
+      { nombre: 'Mercado Libre (Premium)', comision: 35, margenDeseado: 30 }
+    ];
+    let selectedChannelIdx = 0;
+    let globalIIBB = 0;
+    let globalComisionVendedores = 0;
     let chartMargins = null;
     let chartCosts = null;
     let includeIVA = true;
 
     function getPrecioNeto(p) {
       return includeIVA ? p.precio / 1.21 : p.precio;
+    }
+
+    function getSelectedChannelPct() {
+      const ch = salesChannels[selectedChannelIdx];
+      return ch ? ch.comision : 0;
+    }
+
+    function getTotalVariablePct() {
+      return getSelectedChannelPct() + (globalIIBB || 0) + (globalComisionVendedores || 0);
+    }
+
+    function getSelectedChannelName() {
+      const ch = salesChannels[selectedChannelIdx];
+      return ch ? ch.nombre : 'No seleccionado';
+    }
+
+    function getCostoComercial(p) {
+      return p.precio * (getTotalVariablePct() / 100);
+    }
+
+    function getGananciaUnitariaReal(p) {
+      return getPrecioNeto(p) - p.costo - getCostoComercial(p);
+    }
+
+    function onChannelChange(idx) {
+      selectedChannelIdx = parseInt(idx);
+      const sel = document.getElementById('channel-simulator');
+      if (sel) sel.value = selectedChannelIdx;
+      renderChannelsList();
+      renderProfitTable();
+      updateSemaforo();
+      renderTop5();
     }
 
     const businessData = {
@@ -1842,6 +2167,8 @@
     function showView(id) {
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.getElementById(id).classList.add('active');
+      const btn = document.getElementById('floating-help-btn');
+      if (btn) btn.style.display = (id === 'view-dashboard') ? 'flex' : 'none';
     }
 
     /* ═══════ AUTH ═══════ */
@@ -2043,6 +2370,7 @@
       }
 
       showView('view-dashboard');
+      renderChannelsList();
 
       /* Update header */
       document.getElementById('dash-user-name').textContent = currentUser.name.split(' ')[0];
@@ -2071,7 +2399,7 @@
         document.querySelectorAll('.dash-nav-item').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         const tab = btn.dataset.tab;
-        ['dashboard', 'datos', 'rentabilidad', 'suscripcion', 'admin'].forEach(t => {
+        ['dashboard', 'datos', 'rentabilidad', 'guia', 'suscripcion', 'admin'].forEach(t => {
           const el = document.getElementById('tab-content-' + t);
           if (el) el.style.display = t === tab ? '' : 'none';
         });
@@ -2128,6 +2456,8 @@
       if (data.quejas_prev !== null && !isNaN(data.quejas_prev)) businessData.quejas.prev = data.quejas_prev;
 
       dataLoaded = true;
+      const msg = document.getElementById('dash-apply-msg');
+      if (msg) { msg.style.display = 'inline'; setTimeout(() => { msg.style.display = 'none'; }, 3000); }
     }
 
     function handleUnifiedUpload(event) {
@@ -2222,6 +2552,8 @@
               if (missingProd.length > 0) {
                 alerts.push({ type: 'error', sheet: 'Productos', msg: 'Columnas faltantes en hoja Productos: ' + missingProd.join(', ') + '. No se pudieron cargar los productos. Descargá la plantilla para ver el formato.' });
               } else {
+                products = [];
+                productsLoaded = 0;
                 for (let i = 1; i < json.length; i++) {
                   const row = json[i];
                   if (!row || !row[colMap.nombre]) continue;
@@ -2327,7 +2659,7 @@
               document.querySelectorAll('.dash-nav-item').forEach(b => b.classList.remove('active'));
               const rentBtn = document.querySelector('[data-tab="rentabilidad"]');
               if (rentBtn) rentBtn.classList.add('active');
-              ['dashboard', 'datos', 'rentabilidad', 'suscripcion', 'admin'].forEach(t => {
+        ['dashboard', 'datos', 'rentabilidad', 'guia', 'suscripcion', 'admin'].forEach(t => {
                 const el = document.getElementById('tab-content-' + t);
                 if (el) el.style.display = t === 'rentabilidad' ? '' : 'none';
               });
@@ -2424,20 +2756,151 @@
       fixedCosts.otros = v('cf-otros');
       const total = fixedCosts.alquiler + fixedCosts.sueldos + fixedCosts.servicios + fixedCosts.otros;
       const el = document.getElementById('fixed-costs-saved');
-      el.textContent = 'Guardado — Total: $' + total.toLocaleString('es-AR') + '/mes';
+      el.textContent = 'Guardado — Total: $' + total.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '/mes';
       el.style.display = 'inline';
       setTimeout(() => { el.style.display = 'none'; }, 3000);
       renderProfitTable();
-      addLog('data-loaded', 'Costos fijos guardados: $' + total.toLocaleString('es-AR') + '/mes');
+      addLog('data-loaded', 'Costos fijos guardados: $' + total.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '/mes');
     }
 
     function getTotalFixedCosts() {
       return fixedCosts.alquiler + fixedCosts.sueldos + fixedCosts.servicios + fixedCosts.otros;
     }
 
+    function saveVariableCosts() {
+      const val = (id) => { const el = document.getElementById(id); return el && el.value !== '' ? parseFloat(el.value) : 0; };
+      globalIIBB = val('vc-iibb');
+      globalComisionVendedores = val('vc-comision-vendedores');
+      const container = document.getElementById('channels-list');
+      if (container) {
+        const inputs = container.querySelectorAll('input[data-channel-idx]');
+        inputs.forEach(inp => {
+          const idx = parseInt(inp.dataset.channelIdx);
+          salesChannels[idx].comision = parseFloat(inp.value) || 0;
+        });
+        const margenInputs = container.querySelectorAll('input[data-channel-margen]');
+        margenInputs.forEach(inp => {
+          const idx = parseInt(inp.dataset.channelMargen);
+          salesChannels[idx].margenDeseado = parseFloat(inp.value) || 0;
+        });
+        const nameInputs = container.querySelectorAll('input[data-channel-name]');
+        nameInputs.forEach(inp => {
+          const idx = parseInt(inp.dataset.channelName);
+          salesChannels[idx].nombre = inp.value || salesChannels[idx].nombre;
+        });
+      }
+      const total = getTotalVariablePct();
+      const ch = getSelectedChannelName();
+      const el = document.getElementById('variable-costs-saved');
+      el.textContent = 'Guardado — Canal: ' + ch + ' → Total: ' + total.toFixed(1) + '%';
+      el.style.display = 'inline';
+      setTimeout(() => { el.style.display = 'none'; }, 3000);
+      renderChannelsList();
+      renderProfitTable();
+      updateSemaforo();
+      renderTop5();
+      addLog('data-loaded', 'Costos variables guardados: ' + total.toFixed(1) + '% (' + ch + ')');
+    }
+
+    function renderChannelsList() {
+      const container = document.getElementById('channels-list');
+      if (!container) return;
+      container.innerHTML = salesChannels.map((ch, i) => {
+        const isSelected = i === selectedChannelIdx;
+        const carga = ch.comision + ch.margenDeseado + (globalIIBB || 0) + (globalComisionVendedores || 0);
+        const semaforo = carga >= 100 ? '🔴' : carga >= 75 ? '🟡' : '🟢';
+        const msg = carga >= 100 ? 'Inviable. Los costos y el margen superan el 100%. Estás operando a pérdida o la fórmula se rompe.' :
+          carga >= 75 ? 'Alerta. Para lograr este margen, el precio de venta será extremadamente alto. Evaluá si el cliente final lo pagaría.' :
+          'Canal saludable. Precio competitivo y ganancia asegurada.';
+        const color = carga >= 100 ? 'var(--danger)' : carga >= 75 ? 'var(--warn)' : 'var(--success)';
+        let precioEjemplo = null;
+        if (carga < 100) {
+          precioEjemplo = 10000 / (1 - carga / 100);
+          if (includeIVA) precioEjemplo *= 1.21;
+        }
+        const divisorOk = carga < 100;
+        return '<div style="margin-bottom:6px">' +
+          '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid ' + (isSelected ? 'var(--accent)' : 'var(--border)') + ';border-radius:var(--radius-sm);background:' + (isSelected ? 'var(--accent-light)' : 'transparent') + '">' +
+          '<input type="radio" name="channel-radio" ' + (isSelected ? 'checked' : '') + ' onchange="selectedChannelIdx=' + i + ';renderChannelsList();onChannelChange(' + i + ')" style="cursor:pointer">' +
+          '<input type="text" data-channel-name="' + i + '" value="' + ch.nombre.replace(/"/g, '&quot;') + '" style="flex:1;border:none;background:transparent;font-size:13px;font-weight:600;color:var(--fg);outline:none;min-width:0" oninput="saveChannelName(' + i + ', this.value)">' +
+          '<input type="number" data-channel-idx="' + i + '" value="' + ch.comision + '" step="0.1" style="width:70px;border:1px solid var(--border);border-radius:var(--radius-xs);padding:4px 8px;font-size:13px;font-family:var(--font-mono);text-align:right;background:var(--bg);color:var(--fg)" oninput="updateChannelFromInput(' + i + ', \'comision\', this.value)">' +
+           '<span style="font-size:12px;color:var(--muted);min-width:12px">%</span> <span class="od-tip" data-tip="¿Qué pongo acá? Este es el &apos;peaje&apos;. Es el porcentaje exacto que te cobra la plataforma o el canal por dejarte vender (Ej: Mercado Libre, Tienda Nube). NO es tu ganancia."><span class="od-tip-icon">?</span></span>' +
+          '<input type="number" data-channel-margen="' + i + '" value="' + ch.margenDeseado + '" step="0.1" style="width:70px;border:1px solid var(--border);border-radius:var(--radius-xs);padding:4px 8px;font-size:13px;font-family:var(--font-mono);text-align:right;background:var(--bg);color:var(--fg)" oninput="updateChannelFromInput(' + i + ', \'margenDeseado\', this.value)">' +
+           '<span style="font-size:12px;color:var(--muted);min-width:12px">% margen</span> <span class="od-tip" data-tip="¿Qué pongo acá? Esta es tu GANANCIA LIMPIA al bolsillo. Si querés que te quede un 20% de ganancia real después de pagar comisiones y el costo del producto, poné 20. El sistema hace el cálculo inverso por vos."><span class="od-tip-icon">?</span></span>' +
+          (salesChannels.length > 1 ? '<button onclick="removeSalesChannel(' + i + ')" style="width:24px;height:24px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:14px;border-radius:6px;flex-shrink:0" title="Eliminar">×</button>' : '') +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:10px;padding:6px 10px 6px 32px;font-size:12px">' +
+          '<span style="font-size:16px">' + semaforo + '</span>' +
+          '<span style="color:' + color + ';flex:1">' + msg + '</span>' +
+          (divisorOk && precioEjemplo !== null ? '<span style="color:var(--muted);font-family:var(--font-mono);white-space:nowrap">Ej: costo $10.000 → <strong style="color:var(--fg)">$' + Math.round(precioEjemplo).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</strong></span>' : '<span style="color:var(--muted);white-space:nowrap">Ej: costo $10.000 → <strong style="color:var(--danger)">Margen Inviable</strong></span>') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function addSalesChannel() {
+      salesChannels.push({ nombre: 'Nuevo canal', comision: 0, margenDeseado: 30 });
+      renderChannelsList();
+      renderProfitTable();
+    }
+
+    function updateChannelFromInput(idx, field, value) {
+      salesChannels[idx][field] = parseFloat(value) || 0;
+      const container = document.getElementById('channels-list');
+      if (!container) return;
+      const ch = salesChannels[idx];
+      const carga = ch.comision + ch.margenDeseado + (globalIIBB || 0) + (globalComisionVendedores || 0);
+      const semaforo = carga >= 100 ? '🔴' : carga >= 75 ? '🟡' : '🟢';
+      const msg = carga >= 100 ? 'Inviable. Los costos y el margen superan el 100%. Estás operando a pérdida o la fórmula se rompe.' :
+        carga >= 75 ? 'Alerta. Para lograr este margen, el precio de venta será extremadamente alto. Evaluá si el cliente final lo pagaría.' :
+        'Canal saludable. Precio competitivo y ganancia asegurada.';
+      const color = carga >= 100 ? 'var(--danger)' : carga >= 75 ? 'var(--warn)' : 'var(--success)';
+      let precioEjemplo = null;
+      if (carga < 100) {
+        precioEjemplo = 10000 / (1 - carga / 100);
+        if (includeIVA) precioEjemplo *= 1.21;
+      }
+      const all = container.querySelectorAll('div[style*="margin-bottom:6px"]');
+      const semEl = all[idx] ? all[idx].querySelectorAll('div[style*="display:flex;align-items:center;gap:10px"]')[0] : null;
+      if (semEl) {
+        semEl.innerHTML =
+          '<span style="font-size:16px">' + semaforo + '</span>' +
+          '<span style="color:' + color + ';flex:1">' + msg + '</span>' +
+          (carga < 100 ? '<span style="color:var(--muted);font-family:var(--font-mono);white-space:nowrap">Ej: costo $10.000 → <strong style="color:var(--fg)">$' + Math.round(precioEjemplo).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</strong></span>' : '<span style="color:var(--muted);white-space:nowrap">Ej: costo $10.000 → <strong style="color:var(--danger)">Margen Inviable</strong></span>');
+      }
+    }
+
+    function saveChannelName(idx, value) {
+      salesChannels[idx].nombre = value || salesChannels[idx].nombre;
+    }
+
+    function saveGlobalCostsAndUpdate() {
+      globalIIBB = parseFloat(document.getElementById('vc-iibb').value) || 0;
+      globalComisionVendedores = parseFloat(document.getElementById('vc-comision-vendedores').value) || 0;
+      updateAllChannelSemaphores();
+    }
+
+    function updateAllChannelSemaphores() {
+      salesChannels.forEach((_, i) => {
+        updateChannelFromInput(i, 'comision', salesChannels[i].comision);
+      });
+    }
+
+    function removeSalesChannel(idx) {
+      if (!confirm('¿Estás seguro de eliminar este canal de venta?')) return;
+      if (salesChannels.length <= 1) return;
+      salesChannels.splice(idx, 1);
+      if (selectedChannelIdx >= salesChannels.length) selectedChannelIdx = salesChannels.length - 1;
+      renderChannelsList();
+      renderProfitTable();
+      updateSemaforo();
+      renderTop5();
+    }
+
     /* ═══════ LEGACY PRODUCT UPLOAD (kept for compatibility) ═══════ */
 
     function removeProduct(idx) {
+      if (!confirm('¿Estás seguro de eliminar este producto?')) return;
       products.splice(idx, 1);
       renderProductList();
       renderProfitTable();
@@ -2448,13 +2911,13 @@
       if (!products.length) { c.style.display = 'none'; return; }
       c.style.display = 'block';
       c.innerHTML = products.map((p, i) => {
-        const g = (getPrecioNeto(p) - p.costo) * p.unidades;
+        const g = getGananciaUnitariaReal(p) * p.unidades;
         const cls = g >= 0 ? 'color:var(--success)' : 'color:var(--danger)';
         return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;font-size:13px;border-bottom:1px solid var(--border)">' +
           '<span style="font-weight:600">' + p.nombre + '</span>' +
           '<div style="display:flex;gap:16px;font-family:var(--font-mono);font-size:12px">' +
             '<span>' + p.unidades + ' u.</span>' +
-            '<span style="' + cls + ';font-weight:600">$' + g.toLocaleString('es-AR') + '</span>' +
+            '<span style="' + cls + ';font-weight:600">$' + g.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</span>' +
           '</div>' +
           '<button onclick="removeProduct(' + i + ')" style="width:24px;height:24px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:14px;border-radius:6px" title="Eliminar">×</button>' +
         '</div>';
@@ -2472,22 +2935,25 @@
       if (emptyEl) emptyEl.style.display = 'none';
       if (dataEl) dataEl.style.display = '';
 
-      let totalG = 0, totalI = 0, totalC = 0, perdedores = 0;
+      const totalVPct = getTotalVariablePct();
+      let totalG = 0, totalI = 0, totalC = 0, totalCC = 0, perdedores = 0;
       const rows = products.map(p => {
         const pn = getPrecioNeto(p);
-        const gu = pn - p.costo;
+        const cc = getCostoComercial(p);
+        const gu = pn - p.costo - cc;
         const gt = gu * p.unidades;
         const margen = pn > 0 ? ((gu / pn) * 100) : 0;
-        totalG += gt; totalI += pn * p.unidades; totalC += p.costo * p.unidades;
+        totalG += gt; totalI += pn * p.unidades; totalC += p.costo * p.unidades; totalCC += cc * p.unidades;
         if (gt < 0) perdedores++;
         const badge = gt < 0 ? '<span style="background:var(--danger-bg);color:var(--danger);padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600">PÉRDIDA</span>' :
           '<span style="background:var(--success-bg);color:var(--success);padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600">GANANCIA</span>';
         return '<tr style="border-bottom:1px solid var(--border)">' +
           '<td style="padding:10px 14px;font-weight:600">' + p.nombre + '</td>' +
-          '<td style="padding:10px 14px">$' + p.precio.toLocaleString('es-AR') + (includeIVA ? ' <span style="font-size:10px;color:var(--muted)">(neto: $' + pn.toLocaleString('es-AR') + ')</span>' : '') + '</td>' +
-          '<td style="padding:10px 14px">$' + p.costo.toLocaleString('es-AR') + '</td>' +
+          '<td style="padding:10px 14px">$' + p.precio.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + (includeIVA ? ' <span style="font-size:10px;color:var(--muted)">(neto: $' + pn.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ')</span>' : '') + '</td>' +
+          '<td style="padding:10px 14px">$' + p.costo.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</td>' +
+          '<td style="padding:10px 14px">$' + cc.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + (totalVPct > 0 ? ' <span style="font-size:10px;color:var(--muted)">(' + totalVPct.toFixed(1) + '%)</span>' : '') + '</td>' +
           '<td style="padding:10px 14px">' + p.unidades + '</td>' +
-          '<td style="padding:10px 14px;color:' + (gu < 0 ? 'var(--danger)' : 'var(--success)') + ';font-weight:600">$' + gt.toLocaleString('es-AR') + '</td>' +
+          '<td style="padding:10px 14px;color:' + (gu < 0 ? 'var(--danger)' : 'var(--success)') + ';font-weight:600">$' + gt.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</td>' +
           '<td style="padding:10px 14px;font-family:var(--font-mono);font-size:12px">' + margen.toFixed(1) + '%</td>' +
           '<td style="padding:10px 14px">' + badge + '</td>' +
           '<td style="padding:10px 14px"><button onclick="searchGoogleShopping(\'' + p.nombre.replace(/'/g, "\\'") + '\')" title="Buscar en Google Shopping" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:4px;color:var(--muted);transition:all 0.15s" onmouseover="this.style.borderColor=\'var(--accent)\';this.style.color=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.color=\'var(--muted)\'">🔍</button></td>' +
@@ -2507,27 +2973,36 @@
             '<div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.06)"></div>' +
             '<div style="position:absolute;bottom:-30px;left:30%;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.04)"></div>' +
             '<div style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;opacity:0.8;margin-bottom:8px">ALERTA DE PÉRDIDA</div>' +
-            '<div style="font-family:var(--font-display);font-size:36px;font-weight:800;line-height:1.1;margin-bottom:8px">Estás perdiendo $' + Math.abs(gananciaNeta).toLocaleString('es-AR') + '/mes</div>' +
-            '<div style="font-size:14px;opacity:0.85;line-height:1.5">' +
-              'En 12 meses acumulás <strong>$' + (Math.abs(gananciaNeta) * 12).toLocaleString('es-AR') + ' de pérdida</strong>. ' +
+            '<div style="font-family:var(--font-display);font-size:36px;font-weight:800;line-height:1.1;margin-bottom:8px">Estás perdiendo $' + Math.abs(gananciaNeta).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '/mes</div>' +
+              '<div style="font-size:14px;opacity:0.85;line-height:1.5">' +
+              'En 12 meses acumulás <strong>$' + (Math.abs(gananciaNeta) * 12).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' de pérdida</strong>. ' +
               (perdedores > 0 ? perdedores + ' producto(s) están vendiendo por debajo del costo. ' : '') +
-              'Necesitás generar $' + Math.abs(gananciaNeta).toLocaleString('es-AR') + ' más solo para cubrir costos fijos.' +
+              (totalCC > 0 ? 'Los costos variables de $' + totalCC.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' (' + totalVPct.toFixed(1) + '%) + ' : '') +
+              'Necesitás generar $' + Math.abs(gananciaNeta).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' más solo para cubrir costos.' +
             '</div>' +
           '</div>' :
         (gananciaNeta > 0 && costosFijos > 0 && margenNeta < 10 ?
           '<div style="background:linear-gradient(135deg, oklch(55% 0.14 75), oklch(50% 0.16 60));border-radius:16px;padding:24px 28px;margin-bottom:20px;color:#fff">' +
             '<div style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;opacity:0.8;margin-bottom:6px">MARGEN BAJO</div>' +
-            '<div style="font-family:var(--font-display);font-size:24px;font-weight:700;margin-bottom:4px">Ganás $' + gananciaNeta.toLocaleString('es-AR') + '/mes pero el margen es del ' + margenNeta.toFixed(1) + '%</div>' +
+            '<div style="font-family:var(--font-display);font-size:24px;font-weight:700;margin-bottom:4px">Ganás $' + gananciaNeta.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '/mes pero el margen es del ' + margenNeta.toFixed(1) + '%</div>' +
             '<div style="font-size:13px;opacity:0.85">Cualquier baja de ventas te puede llevar a pérdida. Revisá los productos con margen bajo.</div>' +
           '</div>' : '')) +
 
         /* ── Summary cards ── */
         '<div style="display:flex;gap:24px;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:12px;flex-wrap:wrap">' +
-          '<div><div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Ganancia Bruta</div><div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:' + (totalG >= 0 ? 'var(--success)' : 'var(--danger)') + '">$' + totalG.toLocaleString('es-AR') + '</div><div style="font-size:11px;color:var(--muted)">Margen: ' + margenGlobal.toFixed(1) + '%</div></div>' +
-          (costosFijos > 0 ? '<div><div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Costos Fijos</div><div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--danger)">-$' + costosFijos.toLocaleString('es-AR') + '</div><div style="font-size:11px;color:var(--muted)">Alquiler + sueldos + servicios</div></div>' : '') +
-          '<div><div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Ganancia Neta</div><div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:' + (gananciaNeta >= 0 ? 'var(--success)' : 'var(--danger)') + '">$' + gananciaNeta.toLocaleString('es-AR') + '</div><div style="font-size:11px;color:var(--muted)">Margen: ' + margenNeta.toFixed(1) + '%</div></div>' +
-          '<div><div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Ingresos</div><div style="font-family:var(--font-display);font-size:22px;font-weight:700">$' + totalI.toLocaleString('es-AR') + '</div></div>' +
-          '<div><div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Costos Variables</div><div style="font-family:var(--font-display);font-size:22px;font-weight:700">$' + totalC.toLocaleString('es-AR') + '</div></div>' +
+          '<div><div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Ganancia Bruta</div><div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:' + (totalG >= 0 ? 'var(--success)' : 'var(--danger)') + '">$' + totalG.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</div><div style="font-size:11px;color:var(--muted)">Margen: ' + margenGlobal.toFixed(1) + '%</div></div>' +
+          (totalCC > 0 ? '<div><div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Costos Variables</div><div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--danger)">-$' + totalCC.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</div><div style="font-size:11px;color:var(--muted)">' + totalVPct.toFixed(1) + '% · ' + getSelectedChannelName() + '</div></div>' : '') +
+          (costosFijos > 0 ? '<div><div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Costos Fijos</div><div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--danger)">-$' + costosFijos.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</div><div style="font-size:11px;color:var(--muted)">Alquiler + sueldos + servicios</div></div>' : '') +
+          '<div><div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Ganancia Neta</div><div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:' + (gananciaNeta >= 0 ? 'var(--success)' : 'var(--danger)') + '">$' + gananciaNeta.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</div><div style="font-size:11px;color:var(--muted)">Margen: ' + margenNeta.toFixed(1) + '%</div></div>' +
+          '<div><div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Ingresos</div><div style="font-family:var(--font-display);font-size:22px;font-weight:700">$' + totalI.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</div></div>' +
+        '</div>' +
+
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px 14px;background:var(--accent-light);border:1px solid ' + (getTotalVariablePct() > 0 ? 'var(--accent)' : 'var(--border)') + ';border-radius:var(--radius-sm)">' +
+          '<span style="font-size:12px;font-weight:600;color:var(--fg);white-space:nowrap">Simular vendiendo por:</span>' +
+          '<select id="channel-simulator" onchange="onChannelChange(this.value)" style="flex:1;border:1px solid var(--border);border-radius:var(--radius-xs);padding:6px 10px;font-size:13px;font-family:var(--font-body);background:var(--surface);color:var(--fg);cursor:pointer;outline:none">' +
+            salesChannels.map((ch, i) => '<option value="' + i + '"' + (i === selectedChannelIdx ? ' selected' : '') + '>' + ch.nombre + ' (' + ch.comision + '%)</option>').join('') +
+          '</select>' +
+          '<span style="font-size:11px;color:var(--muted);white-space:nowrap">Total: ' + getTotalVariablePct().toFixed(1) + '%</span>' +
         '</div>' +
 
         '<input type="text" id="search-products" placeholder="\uD83D\uDD0D Buscar producto..." onkeyup="filterProductsTable()" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-body);background:var(--bg);color:var(--fg);margin-bottom:12px;outline:none">' +
@@ -2535,11 +3010,12 @@
           '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Producto</th>' +
           '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase">Precio</th>' +
           '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase">Costo</th>' +
+          '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase">Costo Comercial <span class="od-tip" data-tip="La plata exacta en pesos que se queda la tarjeta, el vendedor y rentas por esta venta."><span class="od-tip-icon">?</span></span></th>' +
           '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase">Unid.</th>' +
-          '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase">Ganancia</th>' +
+          '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase">Ganancia <span class="od-tip" data-tip="Lo que te queda limpio en la mano por cada venta después de pagar el costo y el peaje comercial."><span class="od-tip-icon">?</span></span></th>' +
           '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase">Margen</th>' +
           '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase">Estado</th>' +
-          '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase">Competencia</th>' +
+          '<th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase">Competencia <span class="od-tip" data-tip="Tocá la lupa para buscar a cuánto tiene este producto la competencia en internet."><span class="od-tip-icon">?</span></span></th>' +
         '</tr></thead><tbody>' + rows + '</tbody></table>';
 
       /* ── Render Chart.js charts ── */
@@ -2551,28 +3027,30 @@
       if (gananciaNeta < 0) {
         diagParts.push('<div style="background:var(--danger-bg);border:1px solid oklch(55% 0.18 25 / 0.3);border-radius:14px;padding:20px 24px;display:flex;gap:16px;align-items:flex-start">' +
           '<div style="width:48px;height:48px;border-radius:12px;background:oklch(55% 0.18 25 / 0.15);display:grid;place-items:center;font-size:22px;flex-shrink:0">↓</div>' +
-          '<div><div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--danger);margin-bottom:4px">ESTÁS PERDIENDO PLATA — $' + Math.abs(gananciaNeta).toLocaleString('es-AR') + ' de pérdida neta</div>' +
+          '<div><div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--danger);margin-bottom:4px">ESTÁS PERDIENDO PLATA — $' + Math.abs(gananciaNeta).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' de pérdida neta</div>' +
           '<div style="font-size:13px;color:var(--muted);line-height:1.5">' +
             (perdedores > 0 ? perdedores + ' producto(s) en pérdida. ' : '') +
-            'Ganancia bruta: $' + totalG.toLocaleString('es-AR') + '. Costos fijos: $' + costosFijos.toLocaleString('es-AR') + '. ' +
-            'Necesitás generar $' + Math.abs(gananciaNeta).toLocaleString('es-AR') + ' más por mes para cubrir costos.' +
+            'Ganancia bruta: $' + totalG.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '. ' +
+            (totalCC > 0 ? 'Costos variables: $' + totalCC.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '. ' : '') +
+            'Costos fijos: $' + costosFijos.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '. ' +
+            'Necesitás generar $' + Math.abs(gananciaNeta).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' más por mes para cubrir costos.' +
           '</div></div></div>');
       } else if (costosFijos > 0 && gananciaNeta < totalG * 0.3) {
         diagParts.push('<div style="background:var(--warn-bg);border:1px solid oklch(60% 0.16 75 / 0.3);border-radius:14px;padding:20px 24px;display:flex;gap:16px;align-items:flex-start">' +
           '<div style="width:48px;height:48px;border-radius:12px;background:oklch(60% 0.16 75 / 0.15);display:grid;place-items:center;font-size:22px;flex-shrink:0">⚠</div>' +
-          '<div><div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--warn);margin-bottom:4px">GanÁS $' + gananciaNeta.toLocaleString('es-AR') + ' pero los costos fijos te comen el ' + (totalG > 0 ? Math.round((costosFijos / totalG) * 100) : 0) + '% de la ganancia bruta</div>' +
-          '<div style="font-size:13px;color:var(--muted);line-height:1.5">Ganancia bruta: $' + totalG.toLocaleString('es-AR') + ' → Después de costos fijos: $' + gananciaNeta.toLocaleString('es-AR') + '. Margen neto: ' + margenNeta.toFixed(1) + '%</div></div></div>');
+          '<div><div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--warn);margin-bottom:4px">GANÁS $' + gananciaNeta.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' pero los costos fijos te comen el ' + (totalG > 0 ? Math.round((costosFijos / totalG) * 100) : 0) + '% de la ganancia bruta</div>' +
+          '<div style="font-size:13px;color:var(--muted);line-height:1.5">Ganancia bruta: $' + totalG.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + (totalCC > 0 ? ' → Costos variables: -$' + totalCC.toLocaleString('es-AR', { maximumFractionDigits: 0 }) : '') + ' → Después de costos fijos: $' + gananciaNeta.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '. Margen neto: ' + margenNeta.toFixed(1) + '%</div></div></div>');
       } else if (perdedores > 0) {
         diagParts.push('<div style="background:var(--success-bg);border:1px solid oklch(55% 0.15 155 / 0.3);border-radius:14px;padding:20px 24px;display:flex;gap:16px;align-items:flex-start">' +
           '<div style="width:48px;height:48px;border-radius:12px;background:oklch(55% 0.15 155 / 0.15);display:grid;place-items:center;font-size:22px;flex-shrink:0">↑</div>' +
-          '<div><div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--success);margin-bottom:4px">GANÁS $' + gananciaNeta.toLocaleString('es-AR') + ' neto pero ' + perdedores + ' producto(s) en pérdida</div>' +
-          '<div style="font-size:13px;color:var(--muted);line-height:1.5">Resultado positivo. ' + (costosFijos > 0 ? 'Costos fijos: $' + costosFijos.toLocaleString('es-AR') + '. ' : '') + 'Podés mejorar eliminando o ajustando productos en rojo.</div></div></div>');
+          '<div><div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--success);margin-bottom:4px">GANÁS $' + gananciaNeta.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' neto pero ' + perdedores + ' producto(s) en pérdida</div>' +
+          '<div style="font-size:13px;color:var(--muted);line-height:1.5">Resultado positivo. ' + (costosFijos > 0 ? 'Costos fijos: $' + costosFijos.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '. ' : '') + 'Podés mejorar eliminando o ajustando productos en rojo.</div></div></div>');
       } else {
         diagParts.push('<div style="background:var(--success-bg);border:1px solid oklch(55% 0.15 155 / 0.3);border-radius:14px;padding:20px 24px;display:flex;gap:16px;align-items:flex-start">' +
           '<div style="width:48px;height:48px;border-radius:12px;background:oklch(55% 0.15 155 / 0.15);display:grid;place-items:center;font-size:22px;flex-shrink:0">✓</div>' +
-          '<div><div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--success);margin-bottom:4px">TODO BIEN — Ganás $' + gananciaNeta.toLocaleString('es-AR') + ' neto por mes</div>' +
+          '<div><div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--success);margin-bottom:4px">TODO BIEN — Ganás $' + gananciaNeta.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' neto por mes</div>' +
           '<div style="font-size:13px;color:var(--muted);line-height:1.5">' +
-            (costosFijos > 0 ? 'Costos fijos: $' + costosFijos.toLocaleString('es-AR') + '. ' : '') +
+            (costosFijos > 0 ? 'Costos fijos: $' + costosFijos.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '. ' : '') +
             'Todos los productos son rentables. Margen neto: ' + margenNeta.toFixed(1) + '%</div></div></div>');
       }
       diag.innerHTML = diagParts.join('');
@@ -2600,7 +3078,8 @@
       /* ── Top 5 / Bottom 5 / Otros ── */
       const scored = products.map(p => {
         const pn = getPrecioNeto(p);
-        return { nombre: p.nombre, ganancia: (pn - p.costo) * p.unidades, ingresos: pn * p.unidades, costosVars: p.costo * p.unidades };
+        const gr = getGananciaUnitariaReal(p);
+        return { nombre: p.nombre, ganancia: gr * p.unidades, ingresos: pn * p.unidades, costosVars: p.costo * p.unidades, costoComercial: getCostoComercial(p) * p.unidades };
       });
       scored.sort((a, b) => b.ganancia - a.ganancia);
 
@@ -2648,7 +3127,7 @@
                 callbacks: {
                   label: function(ctx) {
                     const orig = pieData[ctx.dataIndex];
-                    return ctx.label + ': ' + (orig >= 0 ? '+' : '-') + '$' + Math.abs(orig).toLocaleString('es-AR');
+                    return ctx.label + ': ' + (orig >= 0 ? '+' : '-') + '$' + Math.abs(orig).toLocaleString('es-AR', { maximumFractionDigits: 0 });
                   }
                 }
               }
@@ -2679,7 +3158,7 @@
             animation: false,
             plugins: {
               legend: { position: 'bottom', labels: { color: fontColor, font: { size: 11 }, padding: 12 } },
-              tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString('es-AR'); } } }
+              tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString('es-AR', { maximumFractionDigits: 0 }); } } }
             },
             scales: {
               x: { ticks: { color: fontColor, font: { size: 10 }, maxRotation: 45 }, grid: { display: false } },
@@ -2694,14 +3173,17 @@
     function downloadProfitabilityReport() {
       if (!products.length) return;
       const wb = XLSX.utils.book_new();
+      const totalVPct = getTotalVariablePct();
 
       /* ── Sheet 1: Resumen ── */
-      let totalG = 0, totalI = 0, totalC = 0;
+      let totalG = 0, totalI = 0, totalC = 0, totalCC = 0;
       products.forEach(p => {
         const pn = getPrecioNeto(p);
-        totalG += (pn - p.costo) * p.unidades;
+        const cc = getCostoComercial(p);
+        totalG += (pn - p.costo - cc) * p.unidades;
         totalI += pn * p.unidades;
         totalC += p.costo * p.unidades;
+        totalCC += cc * p.unidades;
       });
       const costosFijos = getTotalFixedCosts();
       const gananciaNeta = totalG - costosFijos;
@@ -2712,12 +3194,20 @@
         ['REPORTE DE RENTABILIDAD', '', ''],
         ['Fecha', new Date().toLocaleDateString('es-AR'), ''],
         [includeIVA ? '(Precios incluyen IVA 21% — cálculos con precio neto)' : '(Precios sin IVA — cálculos con precio tal cual)', '', ''],
+        ['Escenario simulado: ' + getSelectedChannelName(), '', ''],
+        [totalVPct > 0 ? '(Costo canal: ' + getSelectedChannelPct().toFixed(1) + '% + IIBB: ' + (globalIIBB || 0).toFixed(1) + '% + Vendedores: ' + (globalComisionVendedores || 0).toFixed(1) + '% = ' + totalVPct.toFixed(1) + '% total)' : '', '', ''],
         ['', '', ''],
         ['CONCEPTO', 'MONTO ($)', 'MARGEN (%)'],
         ['Ingresos totales', totalI, ''],
-        ['Costos variables', totalC, ''],
+        ['Costos variables (productos)', totalC, ''],
+        ['Costos variables (comercialización)', totalCC, ''],
         ['Ganancia bruta', totalG, margenGlobal.toFixed(1) + '%'],
       ];
+      if (totalCC > 0) {
+        resumenRows.push(['  Comisión canal (' + getSelectedChannelName() + ')', getSelectedChannelPct() + '%', '']);
+        if (globalIIBB > 0) resumenRows.push(['  Ingresos Brutos (IIBB)', globalIIBB + '%', '']);
+        if (globalComisionVendedores > 0) resumenRows.push(['  Comisiones vendedores', globalComisionVendedores + '%', '']);
+      }
       if (costosFijos > 0) {
         resumenRows.push(['Costos fijos', -costosFijos, '']);
         resumenRows.push(['  Alquiler', -(fixedCosts.alquiler || 0), '']);
@@ -2734,53 +3224,55 @@
       }
 
       const wsRes = XLSX.utils.aoa_to_sheet(resumenRows);
-      wsRes['!cols'] = [{ wch: 30 }, { wch: 18 }, { wch: 12 }];
+      wsRes['!cols'] = [{ wch: 35 }, { wch: 18 }, { wch: 12 }];
       XLSX.utils.book_append_sheet(wb, wsRes, 'Resumen');
 
       /* ── Sheet 2: Desglose por producto ── */
-      const prodRows = [['Producto', 'Precio Venta', includeIVA ? 'Precio Neto (s/IVA)' : 'Precio Neto', 'Costo Unitario', 'Ganancia/Unidad', 'Unidades', 'Ganancia Total', 'Margen (%)', 'Estado', 'Impacto en Negocio']];
+      const prodRows = [['Producto', 'Precio Venta', includeIVA ? 'Precio Neto (s/IVA)' : 'Precio Neto', 'Costo Unitario', 'Costo Comercial', 'Ganancia/Unidad', 'Unidades', 'Ganancia Total', 'Margen (%)', 'Estado', 'Impacto en Negocio']];
       let totalPerdidaProductos = 0;
       products.forEach(p => {
         const pn = getPrecioNeto(p);
-        const gu = pn - p.costo;
+        const cc = getCostoComercial(p);
+        const gu = pn - p.costo - cc;
         const gt = gu * p.unidades;
         const margen = pn > 0 ? ((gu / pn) * 100) : 0;
         let estado;
         if (gu < 0) { estado = 'ELIMINAR'; totalPerdidaProductos += Math.abs(gt); }
         else if (margen < 15) { estado = 'AJUSTAR PRECIO'; }
         else { estado = 'MANTENER'; }
-        const impacto = gu < 0 ? 'Pierde $' + Math.abs(gt).toLocaleString('es-AR') + '/mes' :
-          'Genera $' + gt.toLocaleString('es-AR') + '/mes';
-        prodRows.push([p.nombre, p.precio, Math.round(pn * 100) / 100, p.costo, gu, p.unidades, gt, margen.toFixed(1) + '%', estado, impacto]);
+        const impacto = gu < 0 ? 'Pierde $' + Math.abs(gt).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '/mes' :
+          'Genera $' + gt.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '/mes';
+        prodRows.push([p.nombre, p.precio, Math.round(pn * 100) / 100, p.costo, Math.round(cc * 100) / 100, gu, p.unidades, gt, margen.toFixed(1) + '%', estado, impacto]);
       });
 
       const wsProd = XLSX.utils.aoa_to_sheet(prodRows);
-      wsProd['!cols'] = [{ wch: 20 }, { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 10 }, { wch: 16 }, { wch: 10 }, { wch: 16 }, { wch: 28 }];
+      wsProd['!cols'] = [{ wch: 20 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 12 }, { wch: 10 }, { wch: 16 }, { wch: 10 }, { wch: 16 }, { wch: 28 }];
       XLSX.utils.book_append_sheet(wb, wsProd, 'Desglose Productos');
 
       /* ── Sheet 3: Recomendaciones ── */
       const recRows = [['RECOMENDACIONES DEL ANÁLISIS', '', ''], ['', '', '']];
-      const perdedores = products.filter(p => getPrecioNeto(p) < p.costo);
-      const margenBajo = products.filter(p => { const pn = getPrecioNeto(p); return pn >= p.costo && ((pn - p.costo) / pn * 100) < 15; });
-      const sanos = products.filter(p => { const pn = getPrecioNeto(p); return pn >= p.costo && ((pn - p.costo) / pn * 100) >= 15; });
+      const perdedores = products.filter(p => getGananciaUnitariaReal(p) < 0);
+      const margenBajo = products.filter(p => { const gr = getGananciaUnitariaReal(p); const pn = getPrecioNeto(p); return gr >= 0 && pn > 0 && (gr / pn * 100) < 15; });
+      const sanos = products.filter(p => { const gr = getGananciaUnitariaReal(p); const pn = getPrecioNeto(p); return gr >= 0 && pn > 0 && (gr / pn * 100) >= 15; });
 
       if (perdedores.length > 0) {
-        recRows.push(['PRODUCTOS A ELIMINAR (venden por debajo del costo)', '', '']);
+        recRows.push(['PRODUCTOS A ELIMINAR (venden por debajo del costo real)', '', '']);
         perdedores.forEach(p => {
-          const pn = getPrecioNeto(p);
-          const perdida = Math.abs((pn - p.costo) * p.unidades);
-          recRows.push(['  ' + p.nombre, 'Pierde $' + perdida.toLocaleString('es-AR') + '/mes', 'Eliminar o reemplazar']);
+          const gr = getGananciaUnitariaReal(p);
+          const perdida = Math.abs(gr * p.unidades);
+          recRows.push(['  ' + p.nombre, 'Pierde $' + perdida.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '/mes', 'Eliminar o reemplazar']);
         });
-        recRows.push(['  Subtotal pérdida por eliminar', '$' + totalPerdidaProductos.toLocaleString('es-AR') + '/mes', '']);
+        recRows.push(['  Subtotal pérdida por eliminar', '$' + totalPerdidaProductos.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '/mes', '']);
         recRows.push(['', '', '']);
       }
       if (margenBajo.length > 0) {
         recRows.push(['PRODUCTOS CON MARGEN BAJO (<15%) — AJUSTAR PRECIO', '', '']);
         margenBajo.forEach(p => {
           const pn = getPrecioNeto(p);
-          const margen = ((pn - p.costo) / pn * 100).toFixed(1);
+          const gr = getGananciaUnitariaReal(p);
+          const margen = (gr / pn * 100).toFixed(1);
           const nuevoPrecio = Math.ceil(p.costo / 0.7);
-          recRows.push(['  ' + p.nombre, 'Margen: ' + margen + '%', 'Subir precio a $' + nuevoPrecio.toLocaleString('es-AR')]);
+          recRows.push(['  ' + p.nombre, 'Margen real: ' + margen + '%', 'Subir precio a $' + nuevoPrecio.toLocaleString('es-AR', { maximumFractionDigits: 0 })]);
         });
         recRows.push(['', '', '']);
       }
@@ -2788,24 +3280,55 @@
         recRows.push(['PRODUCTOS SANOS — MANTENER', '', '']);
         sanos.forEach(p => {
           const pn = getPrecioNeto(p);
-          const margen = ((pn - p.costo) / pn * 100).toFixed(1);
-          recRows.push(['  ' + p.nombre, 'Margen: ' + margen + '%', 'OK']);
+          const gr = getGananciaUnitariaReal(p);
+          const margen = (gr / pn * 100).toFixed(1);
+          recRows.push(['  ' + p.nombre, 'Margen real: ' + margen + '%', 'OK']);
         });
         recRows.push(['', '', '']);
       }
       if (gananciaNeta < 0) {
         recRows.push(['IMPACTO FINANCIERO', '', '']);
-        recRows.push(['  Pérdida mensual', '$' + Math.abs(gananciaNeta).toLocaleString('es-AR'), '']);
-        recRows.push(['  Pérdida anual proyectada', '$' + (Math.abs(gananciaNeta) * 12).toLocaleString('es-AR'), '']);
-        recRows.push(['  Acción necesaria', 'Generar $' + Math.abs(gananciaNeta).toLocaleString('es-AR') + ' más por mes', '']);
+        recRows.push(['  Pérdida mensual', '$' + Math.abs(gananciaNeta).toLocaleString('es-AR', { maximumFractionDigits: 0 }), '']);
+        recRows.push(['  Pérdida anual proyectada', '$' + (Math.abs(gananciaNeta) * 12).toLocaleString('es-AR', { maximumFractionDigits: 0 }), '']);
+        recRows.push(['  Acción necesaria', 'Generar $' + Math.abs(gananciaNeta).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' más por mes', '']);
       }
 
       const wsRec = XLSX.utils.aoa_to_sheet(recRows);
-      wsRec['!cols'] = [{ wch: 45 }, { wch: 25 }, { wch: 25 }];
+      wsRec['!cols'] = [{ wch: 50 }, { wch: 25 }, { wch: 25 }];
       XLSX.utils.book_append_sheet(wb, wsRec, 'Recomendaciones');
 
       XLSX.writeFile(wb, 'reporte-rentabilidad.xlsx');
       addLog('thinking', 'Reporte descargado: reporte-rentabilidad.xlsx');
+    }
+
+    /* ═══════ MULTI-PRICE-LIST EXCEL ═══════ */
+    function downloadMultiPriceList() {
+      if (!products.length) return;
+      const wb = XLSX.utils.book_new();
+      const rows = [['Producto', 'Costo Unitario']];
+      salesChannels.forEach(ch => {
+        rows[0].push('Precio ' + ch.nombre);
+      });
+      products.forEach(p => {
+        const row = [p.nombre, p.costo];
+        salesChannels.forEach(ch => {
+          const divisor = 1 - (ch.comision + (globalIIBB || 0) + (globalComisionVendedores || 0) + ch.margenDeseado) / 100;
+          if (divisor <= 0) {
+            row.push('Margen Inviable');
+          } else {
+            let precio = p.costo / divisor;
+            if (includeIVA) precio *= 1.21;
+            row.push(Math.round(precio));
+          }
+        });
+        rows.push(row);
+      });
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      ws['!cols'] = [{ wch: 22 }, { wch: 14 }];
+      salesChannels.forEach(() => { ws['!cols'].push({ wch: 28 }); });
+      XLSX.utils.book_append_sheet(wb, ws, 'Listas de Precios');
+      XLSX.writeFile(wb, 'lista-de-precios-multicanal.xlsx');
+      addLog('thinking', 'Listas de precios descargadas: lista-de-precios-multicanal.xlsx');
     }
 
     /* ═══════ LOG ═══════ */
@@ -2814,7 +3337,7 @@
     /* ═══════ SEMAFORO DE GANANCIA NETA ═══════ */
     function updateSemaforo() {
       if (!products.length) { resetSemaforo(); return; }
-      const totalG = products.reduce((s, p) => { const pn = getPrecioNeto(p); return s + (pn - p.costo) * p.unidades; }, 0);
+      const totalG = products.reduce((s, p) => s + getGananciaUnitariaReal(p) * p.unidades, 0);
       const costosFijos = getTotalFixedCosts();
       const gananciaNeta = totalG - costosFijos;
       const icon = document.getElementById('semaforo-icon');
@@ -2824,10 +3347,10 @@
       if (gananciaNeta < 0) {
         icon.textContent = '🔴';
         amount.style.color = 'var(--danger)';
-        amount.textContent = '-$' + Math.abs(gananciaNeta).toLocaleString('es-AR');
-        sub.innerHTML = '<strong style="color:var(--danger)">Estás perdiendo $' + Math.abs(gananciaNeta).toLocaleString('es-AR') + '/mes.</strong> ' +
-          (costosFijos > 0 ? 'Los costos fijos de $' + costosFijos.toLocaleString('es-AR') + ' superan la ganancia bruta de $' + totalG.toLocaleString('es-AR') + '.' : 'La ganancia bruta es negativa.') +
-          ' Necesitás cubrir <strong>$' + Math.abs(gananciaNeta).toLocaleString('es-AR') + '</strong> solo para empatar.';
+        amount.textContent = '-$' + Math.abs(gananciaNeta).toLocaleString('es-AR', { maximumFractionDigits: 0 });
+        sub.innerHTML = '<strong style="color:var(--danger)">Estás perdiendo $' + Math.abs(gananciaNeta).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '/mes.</strong> ' +
+          (costosFijos > 0 ? 'Los costos fijos de $' + costosFijos.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' superan la ganancia bruta de $' + totalG.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '.' : 'La ganancia bruta es negativa.') +
+          ' Necesitás cubrir <strong>$' + Math.abs(gananciaNeta).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</strong> solo para empatar.';
         document.getElementById('semaforo-container').querySelector('div').style.background = 'linear-gradient(135deg, oklch(95% 0.04 25), oklch(97% 0.01 25))';
         document.getElementById('semaforo-container').querySelector('div').style.borderColor = 'oklch(55% 0.18 25 / 0.3)';
       } else if (gananciaNeta === 0) {
@@ -2840,9 +3363,9 @@
       } else {
         icon.textContent = '🟢';
         amount.style.color = 'var(--success)';
-        amount.textContent = '$' + gananciaNeta.toLocaleString('es-AR');
+        amount.textContent = '$' + gananciaNeta.toLocaleString('es-AR', { maximumFractionDigits: 0 });
         const margenNeta = totalG > 0 ? ((gananciaNeta / (totalG)) * 100) : 0;
-        sub.innerHTML = 'Ganás <strong style="color:var(--success)">$' + gananciaNeta.toLocaleString('es-AR') + '</strong> libres después de costos fijos.' +
+        sub.innerHTML = 'Ganás <strong style="color:var(--success)">$' + gananciaNeta.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</strong> libres después de costos fijos.' +
           (costosFijos > 0 ? ' Margen neto: ' + margenNeta.toFixed(1) + '%.' : '') +
           (margenNeta < 10 ? ' <span style="color:var(--warn)">Margen bajo — cualquier baja de ventas te puede llevar a pérdida.</span>' : '');
         document.getElementById('semaforo-container').querySelector('div').style.background = 'linear-gradient(135deg, oklch(95% 0.04 155), oklch(97% 0.01 155))';
@@ -2851,16 +3374,35 @@
       /* Update secondary KPIs */
       const totalI = products.reduce((s, p) => s + getPrecioNeto(p) * p.unidades, 0);
       const totalC = products.reduce((s, p) => s + p.costo * p.unidades, 0);
+      const totalCC = products.reduce((s, p) => s + getCostoComercial(p) * p.unidades, 0);
       const margenNeta = totalI > 0 ? ((gananciaNeta / totalI) * 100) : 0;
-      document.getElementById('val-ventas').textContent = '$' + totalI.toLocaleString('es-AR');
+      document.getElementById('val-ventas').textContent = '$' + totalI.toLocaleString('es-AR', { maximumFractionDigits: 0 });
       document.getElementById('chg-ventas').textContent = 'Ingresos totales';
       document.getElementById('chg-ventas').className = 'kpi-change flat';
-      document.getElementById('val-stock').textContent = '$' + totalC.toLocaleString('es-AR');
+      document.getElementById('val-stock').textContent = '$' + totalC.toLocaleString('es-AR', { maximumFractionDigits: 0 });
       document.getElementById('chg-stock').textContent = 'Costo total variables';
       document.getElementById('chg-stock').className = 'kpi-change flat';
       document.getElementById('val-margen').textContent = margenNeta.toFixed(1) + '%';
       document.getElementById('chg-margen').textContent = gananciaNeta >= 0 ? 'rentable' : 'en pérdida';
       document.getElementById('chg-margen').className = 'kpi-change ' + (gananciaNeta >= 0 ? 'up' : 'down');
+      /* ── Punto de Equilibrio ── */
+      const metaEl = document.getElementById('meta-ventas');
+      if (metaEl) {
+        if (totalI > 0 && gananciaNeta !== 0) {
+          const margenBruto = totalG / totalI;
+          if (margenBruto > 0) {
+            const meta = Math.ceil(costosFijos / margenBruto);
+            metaEl.textContent = '$' + meta.toLocaleString('es-AR', { maximumFractionDigits: 0 });
+            metaEl.style.color = 'var(--accent)';
+          } else {
+            metaEl.textContent = 'Faltan datos o margen negativo';
+            metaEl.style.color = 'var(--muted)';
+          }
+        } else {
+          metaEl.textContent = 'Faltan datos o margen negativo';
+          metaEl.style.color = 'var(--muted)';
+        }
+      }
     }
 
     function resetSemaforo() {
@@ -2877,6 +3419,7 @@
       }
       ['val-ventas', 'val-stock', 'val-margen'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '$0'; });
       ['chg-ventas', 'chg-stock', 'chg-margen'].forEach(id => { const el = document.getElementById(id); if (el) { el.textContent = '— esperando datos'; el.className = 'kpi-change flat'; } });
+      const meta = document.getElementById('meta-ventas'); if (meta) { meta.textContent = 'Faltan datos o margen negativo'; meta.style.color = 'var(--muted)'; }
     }
 
     /* ═══════ TOP 5 MEJORES / PEORES ═══════ */
@@ -2884,8 +3427,8 @@
       if (!products.length) { document.getElementById('top5-container').style.display = 'none'; return; }
       const scored = products.map(p => {
         const pn = getPrecioNeto(p);
-        const ganancia = (pn - p.costo) * p.unidades;
-        const margen = pn > 0 ? ((pn - p.costo) / pn * 100) : 0;
+        const ganancia = getGananciaUnitariaReal(p) * p.unidades;
+        const margen = pn > 0 ? (getGananciaUnitariaReal(p) / pn * 100) : 0;
         return { nombre: p.nombre, ganancia, margen, unidades: p.unidades, precio: p.precio, costo: p.costo };
       });
       scored.sort((a, b) => b.ganancia - a.ganancia);
@@ -2900,7 +3443,7 @@
         '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px">' +
           '<div style="flex:1;font-weight:600">' + p.nombre + '</div>' +
           '<div style="text-align:right">' +
-            '<div style="color:var(--success);font-weight:700;font-family:var(--font-mono)">+$' + p.ganancia.toLocaleString('es-AR') + '</div>' +
+            '<div style="color:var(--success);font-weight:700;font-family:var(--font-mono)">+$' + p.ganancia.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</div>' +
             '<div style="font-size:11px;color:var(--muted)">' + p.margen.toFixed(1) + '% · ' + p.unidades + ' u.</div>' +
           '</div>' +
         '</div>'
@@ -2910,7 +3453,7 @@
         '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px">' +
           '<div style="flex:1;font-weight:600">' + p.nombre + '</div>' +
           '<div style="text-align:right">' +
-            '<div style="color:' + (p.ganancia < 0 ? 'var(--danger)' : 'var(--warn)') + ';font-weight:700;font-family:var(--font-mono)">' + (p.ganancia >= 0 ? '+' : '') + '$' + p.ganancia.toLocaleString('es-AR') + '</div>' +
+            '<div style="color:' + (p.ganancia < 0 ? 'var(--danger)' : 'var(--warn)') + ';font-weight:700;font-family:var(--font-mono)">' + (p.ganancia >= 0 ? '+' : '') + '$' + p.ganancia.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</div>' +
             '<div style="font-size:11px;color:var(--muted)">' + p.margen.toFixed(1) + '% · ' + p.unidades + ' u.</div>' +
           '</div>' +
         '</div>'
@@ -2928,7 +3471,7 @@
       const margenDelta = d.margen.base - d.margen.prev;
 
       if (ventasDelta < 0) {
-        recos.push({ icon: 'price', iconClass: 'price', title: 'Bajaron las ventas ' + Math.abs(ventasPct) + '%', detail: 'Las ventas cayeron de $' + d.ventas.prev.toLocaleString('es-AR') + ' a $' + d.ventas.base.toLocaleString('es-AR') + '.', action: 'Revisá precios, hacé una promo, o analizá qué productos se dejaron de vender.', confidence: Math.min(95, 70 + Math.abs(ventasPct)) });
+        recos.push({ icon: 'price', iconClass: 'price', title: 'Bajaron las ventas ' + Math.abs(ventasPct) + '%', detail: 'Las ventas cayeron de $' + d.ventas.prev.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' a $' + d.ventas.base.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '.', action: 'Revisá precios, hacé una promo, o analizá qué productos se dejaron de vender.', confidence: Math.min(95, 70 + Math.abs(ventasPct)) });
       }
       if (d.stock_critico.base > 0) {
         recos.push({ icon: 'stock', iconClass: 'stock', title: 'Tenés ' + d.stock_critico.base + ' producto(s) sin stock', detail: 'Hay productos por debajo del mínimo.', action: 'Contactá a tu proveedor para reabastecer.', confidence: 95 });
@@ -2941,7 +3484,7 @@
         const perdedores = products.filter(p => getPrecioNeto(p) < p.costo);
         if (perdedores.length > 0) {
           const totalPerdida = perdedores.reduce((sum, p) => sum + Math.abs((getPrecioNeto(p) - p.costo) * p.unidades), 0);
-          recos.push({ icon: 'price', iconClass: 'price', title: 'Tenés ' + perdedores.length + ' producto(s) que te están haciendo perder plata', detail: 'Perdés $' + totalPerdida.toLocaleString('es-AR') + '/mes.', action: 'Subí el precio, dejá de venderlos, o negociá el costo.', confidence: 98 });
+          recos.push({ icon: 'price', iconClass: 'price', title: 'Tenés ' + perdedores.length + ' producto(s) que te están haciendo perder plata', detail: 'Perdés $' + totalPerdida.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '/mes.', action: 'Subí el precio, dejá de venderlos, o negociá el costo.', confidence: 98 });
         }
       }
 
@@ -3138,52 +3681,55 @@
     /* ═══════ ENHANCED ANALYTICS ═══════ */
     function generateProductActions() {
       if (products.length === 0) return '';
+      const totalVPct = getTotalVariablePct();
 
       const actions = products.map(p => {
         const pn = getPrecioNeto(p);
-        const gu = pn - p.costo;
+        const cc = getCostoComercial(p);
+        const gu = pn - p.costo - cc;
         const margen = pn > 0 ? (gu / pn) * 100 : 0;
         const impacto = gu * p.unidades;
 
         if (gu < 0) {
-          const precioMinimo = p.costo * 1.1;
-          const gananciaPositiva = (precioMinimo - p.costo) * p.unidades;
+          const precioMinimo = (p.costo + cc) * 1.1;
+          const gananciaPositiva = (precioMinimo - p.costo - getCostoComercial({...p, precio: precioMinimo})) * p.unidades;
           return {
             type: 'danger',
             badge: 'ELIMINAR',
             badgeClass: 'badge-drop',
             title: p.nombre,
-            detail: 'Costo $' + p.costo.toLocaleString('es-AR') + ' > Precio neto $' + pn.toLocaleString('es-AR') + '. Estás perdiendo $' + Math.abs(impacto).toLocaleString('es-AR') + '.' +
-              (p.unidades > 0 ? ' Subí el precio a $' + precioMinimo.toLocaleString('es-AR') + ' o dejá de venderlo.' : ''),
-            impact: '-$' + Math.abs(impacto).toLocaleString('es-AR') + ' en ganancia neta',
+            detail: 'Costo total ($' + (p.costo + cc).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ') supera el precio neto $' + pn.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '. Estás perdiendo $' + Math.abs(impacto).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '.' +
+              (p.unidades > 0 ? ' Subí el precio a $' + precioMinimo.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' o dejá de venderlo.' : ''),
+            impact: '-$' + Math.abs(impacto).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' en ganancia neta',
             impactColor: 'var(--danger)'
           };
         }
 
         if (margen < 15) {
           const precioIdeal = p.costo / 0.35;
-          const gananciaIdeal = (precioIdeal - p.costo) * p.unidades;
+          const ccIdeal = getCostoComercial({...p, precio: precioIdeal});
+          const gananciaIdeal = (precioIdeal - p.costo - ccIdeal) * p.unidades;
           return {
             type: 'warn',
             badge: 'AJUSTAR',
             badgeClass: 'badge-adjust',
             title: p.nombre,
-            detail: 'Margen solo ' + margen.toFixed(1) + '%. Precio ideal para 35%: $' + precioIdeal.toLocaleString('es-AR') + '. Ganarías $' + gananciaIdeal.toLocaleString('es-AR') + '.',
-            impact: '+$' + (gananciaIdeal - impacto).toLocaleString('es-AR') + ' si ajustás precio',
+            detail: 'Margen solo ' + margen.toFixed(1) + '% (incluye ' + totalVPct.toFixed(1) + '% costos variables). Precio ideal para 35%: $' + precioIdeal.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '. Ganarías $' + gananciaIdeal.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '.',
+            impact: '+$' + (gananciaIdeal - impacto).toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' si ajustás precio',
             impactColor: 'var(--warn)'
           };
         }
 
         const precioOptimo = p.costo / 0.40;
-        const gananciaOptima = (pn - p.costo) * p.unidades;
+        const gananciaOptima = gu * p.unidades;
         return {
           type: 'success',
           badge: 'MANTENER',
           badgeClass: 'badge-keep',
           title: p.nombre,
-          detail: 'Margen saludable: ' + margen.toFixed(1) + '%. Ganancia: $' + gananciaOptima.toLocaleString('es-AR') + '.' +
-            (margen < 30 ? ' Podrías subir precio a $' + precioOptimo.toLocaleString('es-AR') + ' para maximizar.' : ''),
-          impact: '+$' + gananciaOptima.toLocaleString('es-AR') + ' ganancia',
+          detail: 'Margen saludable: ' + margen.toFixed(1) + '% (incluye ' + totalVPct.toFixed(1) + '% costos variables). Ganancia: $' + gananciaOptima.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '.' +
+            (margen < 30 ? ' Podrías subir precio a $' + precioOptimo.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' para maximizar.' : ''),
+          impact: '+$' + gananciaOptima.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + ' ganancia',
           impactColor: 'var(--success)'
         };
       });
@@ -3207,23 +3753,25 @@
       const container = document.getElementById('diagnosis-container');
       if (!container || products.length === 0) return;
 
-      const totalG = products.reduce((s, p) => { const pn = getPrecioNeto(p); return s + (pn - p.costo) * p.unidades; }, 0);
+      const totalG = products.reduce((s, p) => s + getGananciaUnitariaReal(p) * p.unidades, 0);
       const totalI = products.reduce((s, p) => s + getPrecioNeto(p) * p.unidades, 0);
       const totalC = products.reduce((s, p) => s + p.costo * p.unidades, 0);
+      const totalCC = products.reduce((s, p) => s + getCostoComercial(p) * p.unidades, 0);
       const costosFijos = getTotalFixedCosts();
       const gananciaNeta = totalG - costosFijos;
       const margenGlobal = totalI > 0 ? ((totalG / totalI) * 100) : 0;
       const margenNeta = totalI > 0 ? ((gananciaNeta / totalI) * 100) : 0;
-      const perdedores = products.filter(p => getPrecioNeto(p) < p.costo);
-      const margenBajo = products.filter(p => { const pn = getPrecioNeto(p); return pn >= p.costo && ((pn - p.costo) / pn * 100) < 15; });
-      const sanos = products.filter(p => { const pn = getPrecioNeto(p); return pn >= p.costo && ((pn - p.costo) / pn * 100) >= 15; });
+      const perdedores = products.filter(p => getGananciaUnitariaReal(p) < 0);
+      const margenBajo = products.filter(p => { const gr = getGananciaUnitariaReal(p); const pn = getPrecioNeto(p); return gr >= 0 && pn > 0 && (gr / pn * 100) < 15; });
+      const sanos = products.filter(p => { const gr = getGananciaUnitariaReal(p); const pn = getPrecioNeto(p); return gr >= 0 && pn > 0 && (gr / pn * 100) >= 15; });
 
       let existingAnalytics = container.querySelector('.analytics-grid');
       if (!existingAnalytics) {
         const analyticsHtml =
           '<div class="analytics-grid">' +
-            '<div class="analytics-card"><div class="analytics-card-label">Ganancia Bruta</div><div class="analytics-card-value" style="color:' + (totalG >= 0 ? 'var(--success)' : 'var(--danger)') + '">$' + totalG.toLocaleString('es-AR') + '</div><div class="analytics-card-detail">Margen: ' + margenGlobal.toFixed(1) + '%</div></div>' +
-            (costosFijos > 0 ? '<div class="analytics-card"><div class="analytics-card-label">Ganancia Neta</div><div class="analytics-card-value" style="color:' + (gananciaNeta >= 0 ? 'var(--success)' : 'var(--danger)') + '">$' + gananciaNeta.toLocaleString('es-AR') + '</div><div class="analytics-card-detail">Costos fijos: -$' + costosFijos.toLocaleString('es-AR') + '</div></div>' : '') +
+            '<div class="analytics-card"><div class="analytics-card-label">Ganancia Bruta</div><div class="analytics-card-value" style="color:' + (totalG >= 0 ? 'var(--success)' : 'var(--danger)') + '">$' + totalG.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</div><div class="analytics-card-detail">Margen: ' + margenGlobal.toFixed(1) + '%</div></div>' +
+            (totalCC > 0 ? '<div class="analytics-card"><div class="analytics-card-label">Costos Variables</div><div class="analytics-card-value" style="color:var(--danger)">-$' + totalCC.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</div><div class="analytics-card-detail">' + getTotalVariablePct().toFixed(1) + '% · ' + getSelectedChannelName() + '</div></div>' : '') +
+            (costosFijos > 0 ? '<div class="analytics-card"><div class="analytics-card-label">Ganancia Neta</div><div class="analytics-card-value" style="color:' + (gananciaNeta >= 0 ? 'var(--success)' : 'var(--danger)') + '">$' + gananciaNeta.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</div><div class="analytics-card-detail">Costos fijos: -$' + costosFijos.toLocaleString('es-AR', { maximumFractionDigits: 0 }) + '</div></div>' : '') +
             '<div class="analytics-card"><div class="analytics-card-label">Diagnóstico</div><div class="analytics-card-value" style="color:' + (perdedores.length > 0 ? 'var(--danger)' : margenBajo.length > 0 ? 'var(--warn)' : 'var(--success)') + '">' + perdedores.length + ' ' + (perdedores.length === 1 ? 'perdedor' : 'perdedores') + '</div><div class="analytics-card-detail">' + sanos.length + ' rentable' + (sanos.length !== 1 ? 's' : '') + ' · ' + margenBajo.length + ' margen bajo</div></div>' +
           '</div>' +
           generateProductActions();
@@ -3404,6 +3952,21 @@
         enterDashboard();
       }
     })();
+  </script>
+
+  <!-- Botón flotante de ayuda -->
+  <button onclick="openHelpGuide()" id="floating-help-btn" style="display:none;position:fixed;bottom:24px;right:24px;width:48px;height:48px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 16px oklch(0% 0 0 / 0.2);z-index:999;transition:transform 0.15s ease,box-shadow 0.15s ease" onmouseenter="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 24px oklch(0% 0 0 / 0.3)'" onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 4px 16px oklch(0% 0 0 / 0.2)'" title="Manual de uso">?</button>
+  <script>
+    function openHelpGuide() {
+      document.querySelectorAll('.dash-nav-item').forEach(b => b.classList.remove('active'));
+      const guiaBtn = document.querySelector('[data-tab="guia"]');
+      if (guiaBtn) guiaBtn.classList.add('active');
+      ['dashboard', 'datos', 'rentabilidad', 'guia', 'suscripcion', 'admin'].forEach(t => {
+        const el = document.getElementById('tab-content-' + t);
+        if (el) el.style.display = t === 'guia' ? '' : 'none';
+      });
+      document.getElementById('dash-main').scrollTop = 0;
+    }
   </script>
 </body>
 </html>
